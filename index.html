@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>YT Thumbnail Downloader | UHB</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --primary: #ff0000;
+      --accent: #00ffcc;
+      --dark-bg: #0d1117;
+      --card-bg: #161b22;
+      --text: #ffffff;
+      --border: #30363d;
+      --success: #2ecc71;
+      --wa-color: #25d366;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
+
+    body {
+      background: var(--dark-bg);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    /* --- Animated Header --- */
+    header {
+      background: linear-gradient(90deg, #000, #ff0000, #000);
+      padding: 1.5rem;
+      text-align: center;
+      box-shadow: 0 4px 20px rgba(255, 0, 0, 0.4);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      border-bottom: 2px solid var(--primary);
+    }
+
+    header h1 {
+      font-size: 1.6rem;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      animation: glowText 2s infinite alternate;
+    }
+
+    @keyframes glowText {
+      from { text-shadow: 0 0 5px #fff, 0 0 10px var(--primary); }
+      to { text-shadow: 0 0 10px #fff, 0 0 20px var(--primary); }
+    }
+
+    .container {
+      flex: 1;
+      max-width: 1000px;
+      margin: 2rem auto;
+      padding: 0 1.5rem;
+      width: 100%;
+    }
+
+    .tool-section {
+      background: var(--card-bg);
+      padding: 2.5rem;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      text-align: center;
+      margin-bottom: 4rem;
+    }
+
+    .input-box {
+      width: 100%;
+      padding: 1.2rem;
+      border-radius: 12px;
+      border: 2px solid var(--border);
+      background: #090c10;
+      color: white;
+      font-size: 1rem;
+      margin-bottom: 1.5rem;
+      outline: none;
+    }
+
+    .btn-fetch {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 1rem 2rem;
+      border-radius: 12px;
+      font-weight: bold;
+      cursor: pointer;
+      width: 100%;
+      font-size: 1.2rem;
+      text-transform: uppercase;
+    }
+
+    #result { margin-top: 2.5rem; display: none; }
+    .thumb-preview { width: 100%; border-radius: 15px; border: 2px solid var(--primary); margin-bottom: 1.5rem; }
+    .download-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; }
+    .dl-card { background: #090c10; padding: 1.2rem; border-radius: 10px; border: 1px solid var(--border); }
+    .dl-link { color: var(--accent); text-decoration: none; font-weight: bold; }
+
+    /* --- Paid Services --- */
+    .services-title { text-align: center; margin-bottom: 2rem; color: var(--primary); text-transform: uppercase; }
+    .services-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; }
+    .service-card { background: var(--card-bg); padding: 2rem; border-radius: 15px; border: 1px solid var(--border); text-align: center; }
+    .service-card i { font-size: 3rem; color: var(--primary); margin-bottom: 1rem; }
+    
+    .order-btn {
+      background: transparent;
+      border: 2px solid var(--primary);
+      color: var(--primary);
+      padding: 0.6rem 1.5rem;
+      border-radius: 30px;
+      text-decoration: none;
+      font-weight: bold;
+      display: inline-block;
+      margin-top: 10px;
+    }
+    .order-btn:hover { background: var(--primary); color: white; }
+
+    /* --- Floating WhatsApp --- */
+    .floating-wa {
+      position: fixed;
+      width: 60px;
+      height: 60px;
+      bottom: 25px;
+      right: 25px;
+      background-color: var(--wa-color);
+      color: #FFF;
+      border-radius: 50px;
+      text-align: center;
+      font-size: 30px;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+      animation: pulseWA 2s infinite;
+    }
+
+    @keyframes pulseWA {
+      0% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.7); }
+      70% { box-shadow: 0 0 0 15px rgba(37, 211, 102, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0); }
+    }
+
+    /* --- Original Style Popup --- */
+    .popup-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.9);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+    }
+
+    .popup-box {
+      background: var(--card-bg);
+      padding: 2.5rem;
+      border-radius: 20px;
+      max-width: 400px;
+      width: 90%;
+      text-align: center;
+      position: relative;
+      border: 2px solid var(--primary);
+      animation: zoomIn 0.4s ease;
+    }
+
+    @keyframes zoomIn { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    .close-btn { position: absolute; top: 10px; right: 15px; cursor: pointer; font-size: 1.8rem; color: #fff; }
+
+    footer {
+      background: #000;
+      padding: 2.5rem 1rem;
+      text-align: center;
+      border-top: 2px solid var(--primary);
+      margin-top: 4rem;
+    }
+    .dev-name { color: var(--primary); font-weight: 900; }
+  </style>
+</head>
+<body>
+
+  <a href="https://wa.me/+923348734337" class="floating-wa" target="_blank">
+    <i class="fab fa-whatsapp"></i>
+  </a>
+
+  <div class="popup-overlay" id="waPopup">
+    <div class="popup-box">
+      <span class="close-btn" onclick="closePopup()">&times;</span>
+      <i class="fab fa-whatsapp" style="font-size: 4.5rem; color: var(--wa-color); margin-bottom: 1rem;"></i>
+      <h2 style="margin-bottom: 10px;">JOIN OUR CHANNEL</h2>
+      <p style="color: #8b949e; margin-bottom: 1.5rem;">Visit to our WhatsApp Channel for latest updates and scripts.</p>
+      <a href="https://whatsapp.com/channel/0029VaskVOHBqbr0Rzvg1Z2b" target="_blank" 
+         style="background:var(--primary); color:white; padding: 0.8rem 1.5rem; border-radius: 5px; text-decoration: none; display: inline-block; font-weight: bold;">
+        Visit to our WhatsApp Channel
+      </a>
+      <br>
+      <button onclick="closePopup()" style="background:none; border:none; color:#555; margin-top:15px; cursor:pointer;">Close</button>
+    </div>
+  </div>
+
+  <header>
+    <h1><i class="fas fa-user-secret"></i> YT DOWNLOADER BY UHB</h1>
+  </header>
+
+  <div class="container">
+    <div class="tool-section">
+      <input type="text" id="videoUrl" class="input-box" placeholder="Paste YouTube Link Here...">
+      <button class="btn-fetch" onclick="fetchThumbnails()">GET THUMBNAILS</button>
+      <div id="result">
+        <img id="mainPreview" class="thumb-preview" src="">
+        <div class="download-grid" id="downloadLinks"></div>
+      </div>
+    </div>
+
+    <h2 class="services-title"><i class="fas fa-crown"></i> Paid YouTube Services</h2>
+    <div class="services-grid">
+      <div class="service-card">
+        <i class="fas fa-users"></i>
+        <h3>Subscribers</h3>
+        <a href="https://wa.me/+923348734337?text=Hi%20UHB,%20I%20want%20to%20order%20Subscribers" class="order-btn">Order Now</a>
+      </div>
+      <div class="service-card">
+        <i class="fas fa-history"></i>
+        <h3>Watch Time</h3>
+        <a href="https://wa.me/+923348734337?text=Hi%20UHB,%20I%20want%20to%20order%20Watch%20Time" class="order-btn">Order Now</a>
+      </div>
+      <div class="service-card">
+        <i class="fas fa-eye"></i>
+        <h3>Views & Likes</h3>
+        <a href="https://wa.me/+923348734337?text=Hi%20UHB,%20I%20want%20to%20order%20Views/Likes" class="order-btn">Order Now</a>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <div class="footer-text">
+      &copy; 2026 | DEVELOPED BY <span class="dev-name">UNKNOWN HACKER BOY</span>
+    </div>
+  </footer>
+
+  <script>
+    window.onload = () => { document.getElementById('waPopup').style.display = 'flex'; };
+    function closePopup() { document.getElementById('waPopup').style.display = 'none'; }
+
+    function fetchThumbnails() {
+      const url = document.getElementById('videoUrl').value;
+      const videoIdMatch = url.match(/(?:v=|\/)([0-9A-Za-z_-]{11})/);
+      const resultDiv = document.getElementById('result');
+      if (!videoIdMatch) { alert("Invalid Link!"); return; }
+      const videoId = videoIdMatch[1];
+      resultDiv.style.display = "block";
+      document.getElementById('mainPreview').src = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+      const qualities = [
+        { name: "HD Quality", key: "maxresdefault" },
+        { name: "Standard", key: "hqdefault" },
+        { name: "Low Res", key: "mqdefault" }
+      ];
+      document.getElementById('downloadLinks').innerHTML = qualities.map(q => `
+        <div class="dl-card">
+          <small>${q.name}</small><br>
+          <a href="https://img.youtube.com/vi/${videoId}/${q.key}.jpg" target="_blank" class="dl-link">Download</a>
+        </div>`).join('');
+      resultDiv.scrollIntoView({ behavior: 'smooth' });
+    }
+  </script>
+</body>
+        </html>
